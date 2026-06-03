@@ -37,11 +37,22 @@ body {
     border-radius: 9999px;
 }
 
+/* เครื่องปริ้นปกติสีชมพูพาสเทล */
 .pink-printer-body {
     background-color: #ffdeeb;
     border: 4px solid #f472b6;
     border-radius: 20px;
     box-shadow: 0px 6px 0px #f472b6;
+    transition: all 0.5s ease;
+}
+
+/* 👑 เครื่องปริ้นสีทองคำด่านบอสโหมดฤดูกาลภาษี (NEW!) 👑 */
+.gold-printer-body {
+    background-color: #fef3c7;
+    border: 4px solid #d97706;
+    border-radius: 20px;
+    box-shadow: 0px 6px 0px #d97706;
+    transition: all 0.5s ease;
 }
 
 .pixel-receipt {
@@ -70,26 +81,23 @@ body {
     animation: printSlide 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
-/* 🐈 ---------------------------------------------------- 🐈 */
-
-/* จัดพิกัดใหม่ให้น้องส้มมานั่งบนจอ LCD ฝั่งซ้าย ไม่โดนตัดขอบจมอีกต่อไป */
+/* 🐈 น้องส้มจัดวางบนจอพิกัดใหม่ 🐈 */
 .office-cat-container {
     position: absolute;
-    top: 12px;           /* ปรับลงมาให้อยู่ในขอบเครื่องปริ้นพอดี */
-    left: 20px;          /* ย้ายมาฝั่งซ้ายของแถบหน้าจอสีดำ */
+    top: 12px;           
+    left: 20px;          
     cursor: pointer;
     user-select: none;
-    z-index: 40;         /* ดันเลเยอร์ให้อยู่เหนือทุกสิ่ง */
+    z-index: 40;         
     transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .office-cat-container:hover {
-    transform: scale(1.2) rotate(-5deg); /* เวลาเอาเมาส์มาชี้จะพองตัวและเอียงหัวดุ๊กดิ๊ก */
+    transform: scale(1.2) rotate(-5deg); 
 }
 
-/* ปรับฟองอากาศบอกอารมณ์ให้ลอยเฉียงหลบมุมสวย ๆ */
 .cat-bubble {
     background: white;
-    border: 2px solid #f472b6; /* เปลี่ยนขอบเป็นสีชมพูเข้าธีม */
+    border: 2px solid #f472b6; 
     border-radius: 8px;
     padding: 1px 5px;
     position: absolute;
@@ -99,7 +107,6 @@ body {
     box-shadow: 2px 2px 0px rgba(244, 114, 182, 0.2);
 }
 
-/* ท่าทางและแอนิเมชันของโมเดลพิกเซลน้องแมว (คงเดิม) */
 .cat-sprite {
     font-size: 26px;
     display: inline-block;
@@ -119,31 +126,6 @@ body {
     0%, 100% { transform: translate(0, 0); }
     50% { transform: translate(1px, -1px); }
 }
-/* 🐈 ---------------------------------------------------- 🐈 */
-
-/* ท่าทางและแอนิเมชันของโมเดลพิกเซลน้องแมว */
-.cat-sprite {
-    font-size: 26px;
-    display: inline-block;
-}
-/* ถ้านอนหลับ ให้มีแอนิเมชันขยับหายใจพองยุบช้า ๆ */
-.cat-sprite.sleeping {
-    animation: catBreathing 2s ease-in-out infinite;
-}
-/* ถ้าตกใจ ให้เต้นดุ๊กดิ๊กสั่นสู้เครื่องปริ้น */
-.cat-sprite.shocked {
-    animation: catShake 0.1s infinite;
-}
-
-@keyframes catBreathing {
-    0%, 100% { transform: translateY(0) scaleY(1); }
-    50% { transform: translateY(1px) scaleY(0.93); }
-}
-@keyframes catShake {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(1px, -1px); }
-}
-/* 🐈 ---------------------------------------------------- 🐈 */
 
 ::-webkit-scrollbar {
     width: 6px;
