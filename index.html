@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pastel Accountant Game</title>
+    <!-- Tailwind CSS (V4) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Vue.js (V3) -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;600;700&family=VT323&display=swap" rel="stylesheet">
+    <!-- เชื่อมโยงไฟล์สไตล์ CSS ภายนอก -->
+    <link rel="stylesheet" href="style.css">
+    <!-- แอบตั้งค่ารูปไอคอนคิ้วท์ ๆ เวลาเอาเว็บไปเพิ่มบนหน้าจอโฮมของ iPad -->
+<link rel="apple-touch-icon" href="https://emojiisland.com/components/com_comprofiler/plugin/templates/default/images/avatar.png">
+</head>
+<body class="bg-[#f8fafc] overflow-x-hidden">
+
+<div id="app" class="min-h-screen max-w-[1400px] mx-auto p-3 flex flex-col gap-3" v-cloak>
+    
+    <!-- HEADER -->
+    <div class="flex justify-between items-center bg-[#e0e7ff] game-card p-3 shrink-0">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl">📊</span>
+            <h1 class="text-xl font-bold text-[#4338ca] tracking-wider">PASTEL ACCOUNTANT</h1>
+        </div>
+        <div class="flex items-center gap-3 bg-white px-3 py-1 rounded-xl border-2 border-[#cbd5e1]">
+            <span class="text-sm font-bold text-[#6d28d9]">⭐ LV.{{ level }}</span>
+            <span class="text-xs font-semibold text-gray-500">{{ xp }} XP</span>
+            <span v-if="streak > 0" class="bg-[#f472b6] text-white px-2 py-0.5 rounded-full text-[10px] font-bold animate-bounce shadow">
+                🔥 {{ streak }}x STREAK
+            </span>
+        </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="grid grid-cols-12 gap-3 flex-1">
+        
+        <!-- LEFT PANEL: BOOKS & ACHIEVEMENTS -->
+        <div class="col-span-12 md:col-span-3 flex flex-col gap-3 overflow-y-auto max-h-full pr-1">
+            <!-- Ledger -->
+            <div class="game-card p-3 flex-1 min-h-[140px] flex flex-col">
+                <h2 class="text-xs font-bold text-[#4338ca] mb-2 flex items-center gap-2 shrink-0">📖 DAILY LEDGER</h2>
+                <div class="space-y-1 overflow-y-auto pr-1 flex-1">
+                    <p v-if="ledgerEntries.length === 0" class="text-center text-gray-400 py-4 text-xs font-semibold">ยังไม่มีรายการบันทึก</p>
+                    <div v-for="entry in ledgerEntries" :key="entry.id" class="flex justify-between items-center text-[11px] border-b pb-1">
+                        <span class="text-gray-400 font-bold">{{ entry.date }}</span>
+                        <span class="font-bold flex-1 px-2 truncate text-gray-700">{{ entry.description }}</span>
+                        <span :class="entry.amount >= 0 ? 'text-[#10b981] font-bold' : 'text-[#f43f5e] font-bold'">
+                            {{ entry.amount >= 0 ? '+' : '' }}{{ entry.amount }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Journal -->
+            <div class="game-card p-3 flex-1 min-h-[140px] flex flex-col">
+                <h2 class="text-xs font-bold text-[#4338ca] mb-2 flex items-center gap-2 shrink-0">📑 JOURNAL (บัญชีคู่)</h2>
+                <div class="space-y-1.5 overflow-y-auto pr-1 flex-1">
+                    <p v-if="journalEntries.length === 0" class="text-center text-gray-400 py-4 text-xs font-semibold">ยังไม่มีการลงบันทึกคู่บัญชี</p>
+                    <div v-for="entry in journalEntries" :key="entry.id" class="bg-[#f8fafc] p-2 rounded-xl border border-gray-200 text-[11px] shadow-inner">
+                        <div class="flex justify-between text-[#10b981] font-bold">
+                            <span>Dr. {{ entry.debit }}</span>
+                            <span>+{{ entry.amount }}</span>
+                        </div>
+                        <div class="flex justify-between text-[#f43f5e] font-bold pl-4">
+                            <span>Cr. {{ entry.credit }}</span>
+                            <span>+{{ entry.amount }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- กล่องความสำเร็จ ACHIEVEMENTS -->
+            <div class="game-card p-3 shrink-0 bg-gradient-to-br from-white to-[#f5f3ff]">
+                <h2 class="text-xs font-bold text-[#6d28d9] mb-2 flex items-center gap-2">🏆 ACHIEVEMENTS</h2>
+                <div class="grid grid-cols-2 gap-2 text-[10px]">
+                    <div v-for="ach in achievements" :key="ach.id" 
+                         :class="ach.unlocked ? 'bg-[#f3e8ff] border-[#c084fc] text-[#6b21a8]' : 'bg-gray-100 border-gray-200 text-gray-400 opacity-60'"
+                         class="p-2 rounded-xl border-2 transition-all duration-300 flex flex-col items-center text-center font-bold gap-1 shadow-sm">
+                        <span class="text-lg">{{ ach.unlocked ? ach.icon : '🔒' }}</span>
+                        <p class="leading-tight">{{ ach.title }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER PANEL: WORKSPACE GAME -->
+        <div class="col-span-12 md:col-span-6 flex flex-col gap-3 min-h-0">
+            <div class="game-card p-3 flex-1 flex flex-col justify-between overflow-y-auto bg-[#fff0f6]">
+                <div class="space-y-3">
+                    
+                    <!-- แท่นเครื่องพิมพ์สลิปใบเสร็จสีชมพูพาสเทล -->
+                    <div class="pink-printer-body p-4 pt-5 relative mb-2">
+                        
+                        <!-- 🐱 ส่วนประกอบของน้องแมวส้มเฝ้าโต๊ะบัญชี (NEW!) 🐱 -->
+                        <div class="office-cat-container" @click="meowCat">
+                            <!-- ฟองสบู่สถานะอารมณ์ของน้องส้ม -->
+                            <div class="cat-bubble pixel-font text-[10px]">
+                                {{ catState === 'sleeping' ? '💤' : (catState === 'shocked' ? '❗👀' : '🐾 เหมียว~') }}
+                            </div>
+                            <!-- ตัวน้องแมวส้มเปลี่ยนท่าทางตามสเตตัสพิกเซล -->
+                            <div class="cat-sprite" :class="catState">
+                                {{ catState === 'sleeping' ? '🐱💤' : (catState === 'shocked' ? '🙀🐾' : '😸🧡') }}
+                            </div>
+                        </div>
+
+                        <!-- หน้าจอ LCD ดิจิทัลบนตัวเครื่อง -->
+                        <div class="bg-[#334155] border-2 border-[#1e293b] rounded-lg p-1.5 text-center mb-4 shadow-inner">
+                            <p class="pixel-font text-[#f472b6] text-sm tracking-widest font-bold uppercase">
+                                🎀 GIRL MATH ACTIVATED 🎀
+                            </p>
+                        </div>
+                        
+                        <!-- ช่องทางออกของกระดาษสลิปใบเสร็จสีเงิน -->
+                        <div class="bg-[#94a3b8] h-3 rounded border-t-2 border-b-2 border-[#475569] shadow-inner relative z-10"></div>
+                        
+                        <!-- ตัวกระดาษสลิปบิลโจทย์พิมพ์พิกเซลยื่นห้อยลงมา -->
+                        <div class="pixel-receipt bg-white border-l-2 border-r-2 border-gray-300 p-4 mx-auto max-w-[92%] -mt-1 shadow-md relative z-0">
+                            <div class="flex justify-between items-center border-b-2 border-dashed border-gray-300 pb-1.5 mb-2">
+                                <span class="text-[10px] font-black text-pink-500 pixel-font tracking-wider">INV-NO: #00{{ currentTaskNumber }}</span>
+                                <span class="text-xl font-black text-pink-600 pixel-font tracking-wide">${{ currentTx.amount }}</span>
+                            </div>
+                            <p class="text-gray-800 font-bold text-xs sm:text-sm leading-relaxed text-center py-1">
+                                {{ currentTx.text }}
+                            </p>
+                            <div class="border-t-2 border-dashed border-gray-300 pt-1.5 mt-2 flex justify-center">
+                                <span class="text-[9px] font-bold text-gray-400 tracking-widest">★ READY TO AUDIT ★</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ฟอร์มเลือกตอบ Debit -->
+                    <div class="bg-white/80 p-2 rounded-xl border-2 border-pink-200">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 mb-1.5">
+                            <label class="text-[11px] font-bold text-blue-600 uppercase tracking-wider">🔹 ฝั่งเดบิต (DEBIT)</label>
+                            <div class="flex gap-1 text-[10px]">
+                                <button @click="currentDebitTab = 'assets'" :class="currentDebitTab === 'assets' ? 'bg-blue-600 text-white font-bold shadow' : 'bg-gray-200 text-gray-600'" class="px-2 py-0.5 rounded-md font-bold">สินทรัพย์</button>
+                                <button @click="currentDebitTab = 'liabs'" :class="currentDebitTab === 'liabs' ? 'bg-blue-600 text-white font-bold shadow' : 'bg-gray-200 text-gray-600'" class="px-2 py-0.5 rounded-md font-bold">หนี้สิน/ทุน</button>
+                                <button @click="currentDebitTab = 'exp'" :class="currentDebitTab === 'exp' ? 'bg-blue-600 text-white font-bold shadow' : 'bg-gray-200 text-gray-600'" class="px-2 py-0.5 rounded-md font-bold">รายได้/จ่าย</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-1.5">
+                            <button v-for="opt in filteredDebitOptions" :key="opt"
+                                @click="selectAccount(opt, 'debit')"
+                                :class="selectedDebit === opt ? 'bg-[#3b82f6] text-white border-[#1d4ed8] shadow-none' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'"
+                                class="p-1.5 text-[11px] rounded-lg border font-bold text-left truncate">
+                                🔵 {{ opt }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ฟอร์มเลือกตอบ Credit -->
+                    <div class="bg-white/80 p-2 rounded-xl border-2 border-pink-200">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 mb-1.5">
+                            <label class="text-[11px] font-bold text-pink-600 uppercase tracking-wider">🔸 ฝั่งเครดิต (CREDIT)</label>
+                            <div class="flex gap-1 text-[10px]">
+                                <button @click="currentCreditTab = 'assets'" :class="currentCreditTab === 'assets' ? 'bg-pink-600 text-white font-bold shadow' : 'bg-gray-200 text-gray-600'" class="px-2 py-0.5 rounded-md font-bold">สินทรัพย์</button>
+                                <button @click="currentCreditTab = 'liabs'" :class="currentCreditTab === 'liabs' ? 'bg-pink-600 text-white font-bold shadow' : 'bg-gray-200 text-gray-600'" class="px-2 py-0.5 rounded-md font-bold">หนี้สิน/ทุน</button>
+                                <button @click="currentCreditTab = 'exp'" :class="currentCreditTab === 'exp' ? 'bg-pink-600 text-white font-bold shadow' : 'bg-gray-200 text-gray-600'" class="px-2 py-0.5 rounded-md font-bold">รายได้/จ่าย</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-1.5">
+                            <button v-for="opt in filteredCreditOptions" :key="opt"
+                                @click="selectAccount(opt, 'credit')"
+                                :class="selectedCredit === opt ? 'bg-[#ec4899] text-white border-[#be185d] shadow-none' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'"
+                                class="p-1.5 text-[11px] rounded-lg border font-bold text-left truncate">
+                                🔴 {{ opt }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- สลิปใบเสร็จแอนิเมชันตอนปริ้นเฉลยออกมาพุ่งพรวด -->
+                <div v-if="feedback" class="bg-white border-2 border-pink-400 p-2.5 rounded-xl shadow-lg font-bold text-center border-dashed animate-print-slide text-xs text-pink-700 flex flex-col items-center justify-center gap-1">
+                    <span class="text-base">🖨️✨ *แคว่ก ๆ ๆ ๆ ๆ*</span>
+                    <p>{{ feedback.message }}</p>
+                </div>
+
+                <!-- ปุ่มควบคุมเกมด้านล่างสุด -->
+                <div class="flex gap-2 mt-2 shrink-0">
+                    <button @click="submitAnswer" :disabled="!selectedDebit || !selectedCredit || feedback"
+                            class="w-full bg-[#ec4899] text-white py-2.5 px-4 rounded-xl font-bold border-b-4 border-[#be185d] active:border-b-0 hover:bg-pink-500 transition-all disabled:opacity-40 btn-retro text-sm flex items-center justify-center gap-1">
+                        <span>📥 บันทึกข้อมูลและสั่งพิมพ์สลิป (SAVE & PRINT)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: FINANCIAL REPORTS -->
+        <div class="col-span-12 md:col-span-3 flex flex-col gap-3 overflow-y-auto max-h-full pl-1">
+            <!-- Mini Cards -->
+            <div class="grid grid-cols-3 gap-1.5 shrink-0">
+                <div class="bg-[#d1fae5] p-1.5 rounded-xl text-center border border-[#10b981] shadow-sm">
+                    <p class="text-[9px] text-gray-500 font-bold">เงินสด</p>
+                    <p class="text-xs font-bold text-[#065f46]">${{ cash }}</p>
+                </div>
+                <div class="bg-[#ede9fe] p-1.5 rounded-xl text-center border border-[#8b5cf6] shadow-sm">
+                    <p class="text-[9px] text-gray-500 font-bold">สินค้าสต็อก</p>
+                    <p class="text-xs font-bold text-[#5b21b6]">${{ inventory }}</p>
+                </div>
+                <div class="bg-[#ffe4e6] p-1.5 rounded-xl text-center border border-[#f43f5e] shadow-sm">
+                    <p class="text-[9px] text-gray-500 font-bold">กำไรสะสม</p>
+                    <p class="text-xs font-bold text-[#9f1239]">${{ revenue - expenses }}</p>
+                </div>
+            </div>
+
+            <!-- Balance Sheet -->
+            <div class="game-card p-3 flex-1 text-[11px] min-h-[160px]">
+                <h2 class="text-xs font-bold text-[#4338ca] mb-1.5 flex items-center gap-1">⚖️ BALANCE SHEET (รินบันทึก)</h2>
+                <div class="space-y-1">
+                    <p class="font-bold text-gray-400 text-[9px] uppercase">สินทรัพย์ (ASSETS)</p>
+                    <div class="flex justify-between font-semibold text-gray-600"><span>เงินสด (Cash)</span><strong>${{ cash }}</strong></div>
+                    <div class="flex justify-between font-semibold text-gray-600"><span>สินค้าคงเหลือ</span><strong>${{ inventory }}</strong></div>
+                    <div class="flex justify-between font-semibold text-gray-600"><span>อุปกรณ์สำนักงาน</span><strong>${{ equipment }}</strong></div>
+                    <div class="flex justify-between border-t pt-0.5 font-bold text-xs text-[#4338ca]">
+                        <span>รวมสินทรัพย์</span><span>${{ cash + inventory + equipment }}</span>
+                    </div>
+                    <p class="font-bold text-gray-400 text-[9px] uppercase pt-1">หนี้สินและทุน</p>
+                    <div class="flex justify-between font-semibold text-gray-600"><span>หนี้สินรวม</span><strong>${{ liabilities }}</strong></div>
+                    <div class="flex justify-between font-semibold text-gray-600"><span>กำไรสะสม/ทุน</span><strong>${{ (cash + inventory + equipment) - liabilities }}</strong></div>
+                </div>
+            </div>
+
+            <!-- Income Statement -->
+            <div class="game-card p-3 shrink-0 text-[11px]">
+                <h2 class="text-xs font-bold text-[#4338ca] mb-1 flex items-center gap-1">📈 INCOME STATEMENT</h2>
+                <div class="space-y-1">
+                    <div class="flex justify-between text-[#10b981] font-bold"><span>รายได้ (Revenue)</span><span>${{ revenue }}</span></div>
+                    <div class="flex justify-between text-[#f43f5e] font-bold"><span>ค่าใช้จ่าย (Expenses)</span><span>-${{ expenses }}</span></div>
+                    <div class="flex justify-between border-t pt-0.5 font-bold text-xs">
+                        <span>กำไรสุทธิ</span>
+                        <span :class="revenue - expenses >= 0 ? 'text-[#10b981]' : 'text-[#f43f5e]'">${{ revenue - expenses }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DAILY GOAL PROGRESS -->
+    <div class="game-card p-2 shrink-0 flex items-center justify-between gap-3 text-xs">
+        <span class="font-bold text-[#4338ca]">🎯 ความคืบหน้ารอบวัน:</span>
+        <div class="flex-1 progress-bar-retro h-3 overflow-hidden relative shadow-inner rounded-full">
+            <div class="h-full progress-bar-fill" :style="{ width: ((currentTaskNumber - 1) * 25) + '%' }"></div>
+        </div>
+        <span class="font-bold text-[#4338ca] pixel-font text-sm">{{ (currentTaskNumber - 1) * 25 }}%</span>
+    </div>
+
+    <!-- POPUP AUDIT REPORT REPORT -->
+    <div v-if="showSummary" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+        <div class="game-card p-5 max-w-xl w-full bg-white flex flex-col gap-3 max-h-[85vh] overflow-y-auto">
+            <div class="text-center">
+                <h2 class="text-xl font-bold text-[#6d28d9]">🌅 รายงานตรวจสอบบัญชีสิ้นวัน</h2>
+                <p class="text-xs text-gray-500 font-semibold">วิเคราะห์ความถูกต้องจาก 4 บิลที่รินบันทึกไป</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-gray-50 p-2 rounded-xl border border-gray-200 text-center">
+                    <p class="text-[10px] text-gray-500 font-bold">บันทึกถูกต้อง</p>
+                    <p class="text-xl font-black text-[#10b981]">{{ correctCount }} / 4 ข้อ</p>
+                </div>
+                <div class="bg-gray-50 p-2 rounded-xl border border-gray-200 text-center">
+                    <p class="text-[10px] text-gray-500 font-bold">ยอดสินทรัพย์จริง</p>
+                    <p class="text-lg font-black text-[#4338ca]">${{ actualTotalAssets }}</p>
+                </div>
+            </div>
+            <div class="space-y-2 overflow-y-auto max-h-[300px] pr-1">
+                <div v-for="(audit, index) in dayAudits" :key="index" class="p-2.5 rounded-xl text-[11px] border"
+                     :class="audit.isCorrect ? 'bg-[#f0fdf4] border-[#10b981]' : 'bg-[#fff1f2] border-[#f43f5e]'">
+                    <div class="flex justify-between font-bold mb-0.5">
+                        <span>บิลข้อที่ {{ index + 1 }}</span>
+                        <span :class="audit.isCorrect ? 'text-[#10b981]' : 'text-[#f43f5e]'">{{ audit.isCorrect ? '✅ ถูกต้อง' : '❌ ผิดพลาด' }}</span>
+                    </div>
+                    <p class="text-gray-700 font-bold mb-1">{{ audit.text }}</p>
+                    <div class="grid grid-cols-2 gap-2 bg-white/60 p-1.5 rounded border border-gray-200">
+                        <div>
+                            <p class="text-gray-400 text-[9px]">รินตอบ:</p>
+                            <p class="text-blue-600 font-bold">Dr. {{ audit.userDebit }}</p>
+                            <p class="text-pink-600 font-bold">Cr. {{ audit.userCredit }}</p>
+                        </div>
+                        <div v-if="!audit.isCorrect">
+                            <p class="text-gray-400 text-[9px]">เฉลยจริง:</p>
+                            <p class="text-[#10b981] font-bold">Dr. {{ audit.correctDebit }}</p>
+                            <p class="text-[#10b981] font-bold">Cr. {{ audit.correctCredit }}</p>
+                        </div>
+                    </div>
+                    <p v-if="!audit.isCorrect" class="text-[#9f1239] mt-1 font-semibold leading-relaxed">💡 {{ audit.explanation }}</p>
+                </div>
+            </div>
+            <p class="text-center font-bold text-xs text-[#6d28d9] bg-[#f5f3ff] py-1.5 rounded-lg">+{{ correctCount * 50 }} XP!</p>
+            <button @click="startNextDay" class="w-full bg-[#6d28d9] text-white py-2.5 rounded-xl font-bold border-b-4 border-[#4c1d95] active:border-b-0 btn-retro text-sm">ก้าวสู่รอบวันทำงานถัดไป ☀️</button>
+        </div>
+    </div>
+
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
